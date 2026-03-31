@@ -8,73 +8,92 @@ import java.util.ArrayList;
 public class Main {
     public static void main(String[] args) {
 
-        // ===== Setup Instruments =====
-        Saham bbca = new Saham("BBCA", "Bank BCA", 9500, 24655010000L, 1200, 1500);
-        Saham tlkm = new Saham("TLKM", "Telkom Indonesia", 3800, 99062216600L, 200, 400);
+        // Taruh Instrumen disini
+        Saham bbca = new Saham("BBCA", "Bank BCA", 9500, 1200, 1500,24655010000L);
+        Saham tlkm = new Saham("TLKM", "Telkom Indonesia", 3800, 200, 400,99062216600L);
+        Crypto btc = new Crypto("BTCUSD", "Bitcoin / US Dolar", 67000, 20000000L);
+        Crypto eth = new Crypto("ETHUSD", "Ethereum / US Dollar", 2076, 20000000L); 
+        Forex eurousd = new Forex("EURUSD", "Euro / US Dollar", 1.147);
+        Forex usdjpy = new Forex("USDJPY", "US Dollar / Japanese Yen ", 155.906);
+        Index spx = new Index("SPX", "S&P500", 6340);
+        Index ndq = new Index("NDQ", "Nasdaq 100", 22950);
+        Komoditas emas = new Komoditas("Gold", "Gold", 4500);
+        Komoditas minyak = new Komoditas("BZ", "Brent Crude Oil", 112);
 
-        // ===== Setup Investors =====
-        Investor budi  = new Investor("INV001", "Budi",  100000);
-        Investor sari  = new Investor("INV002", "Sari",  200000);
-        Investor johan = new Investor("INV003", "Johan", 150000);
+        //Deklarasi investor disini
+        Investor trump  = new Investor("INV001", "trump",  500000);
+        Investor netanyahu  = new Investor("INV002", "netanyahu",  500000);
+        Investor johan = new Investor("INV003", "Johan", 500000);
 
-        // ===== Display Initial Info =====
-        System.out.println("\n========== INITIAL INFO ==========");
-        budi.displayInfo();
-        sari.displayInfo();
+
+        System.out.println("\n========== INFO AWAL ==========");
+        trump.displayInfo();
+        netanyahu.displayInfo();
         johan.displayInfo();
 
-        // ===== Budi buys BBCA LONG =====
+
         System.out.println("\n========== TRANSAKSI ==========");
-        budi.beli("TRX001", bbca, 10, 1.0, "LONG");
+        trump.beli("TRX101", bbca, 10, 1.0, "LONG");
+        trump.beli("TRX102", emas, 0.5, 5.0, "SHORT");
+        trump.beli("TRX103", spx, 0.5, 5.0, "LONG");
 
-        // ===== Sari buys TLKM LONG with leverage =====
-        sari.beli("TRX002", tlkm, 20, 2.0, "LONG");
+        netanyahu.beli("TRX201", tlkm, 20, 2.0, "LONG");
+        netanyahu.beli("TRX202", btc, 2, 3.0, "LONG");
+        netanyahu.beli("TRX203",ndq,2,6.0,"SHORT");
 
-        // ===== Johan shorts BBCA =====
-        johan.beli("TRX003", bbca, 5, 1.0, "SHORT");
+        johan.beli("TRX301", bbca, 5, 1.0, "SHORT");
+        johan.beli("TRX302",usdjpy,0.1,5.0,"LONG");
+        johan.beli("TRX303", minyak, 5, 5.0, "LONG");
 
-        // ===== Set Risk Management =====
-        // Budi sets TP at 10500 and SL at 9000 on his BBCA position
-        budi.getPorto().getDaftarAset().get(0).setRiskManagement(9000, 10500);
+        //Atur TP/SL jika ada, index berdasarkan aset dimasukkan urutan ke berapa, pada trump array porto = {bbca,emas,spx}
+        //Netanyahu = {tlkm,btc,ndq} ; Johan = {bbca,usdjpy,minyak}
+        trump.getPorto().getDaftarAset().get(0).setRiskManagement(9000, 10500);
+        netanyahu.getPorto().getDaftarAset().get(1).setRiskManagement(62000, 73000);
 
-        // ===== View portfolios before simulation =====
         System.out.println("\n========== PORTOFOLIO SEBELUM SIMULASI ==========");
-        budi.getPorto().viewPortofolio();
-        sari.getPorto().viewPortofolio();
+        trump.getPorto().viewPortofolio();
+        netanyahu.getPorto().viewPortofolio();
         johan.getPorto().viewPortofolio();
 
         // ===== Setup simulation =====
-        // Price history for simulation
-        // Row 0 = BBCA future prices
-        // Row 1 = TLKM future prices
-        //Instrumen BBCA dan TLKM yang akan berubah harganya
-        Instrumen[] instrumen = {bbca,tlkm};
+        //Masukan instrumen yang akan berubah harga di array di bawah
+        Instrumen[] instrumen = {bbca,tlkm,btc,usdjpy,spx,ndq,emas,minyak};
+        //Urut berdasarkan urutuan array instrumen
+        //Nilai dimasukkan berdasarkan hari/langkah, karena simulasi 5 langkah, maka tiap array ada 5 input, jika < langkah, maka simulasi akan
+        //Membuat angka random dengan fluktuasi maksimum dari harga sebelumnya sebesasr 7%
         double[][] hargaSelanjutnya = {
-            {9700, 9900, 10100, 10300, 10600}, // BBCA — will hit Budi's TP of 10500
-            {3900, 3850, 3950, 4000, 4100}     // TLKM
+            {9700, 9900, 10100, 10300, 10600}, //bbca
+            {3900, 3850, 3950, 4000, 4100}, //tlkm
+            {65170,63280,74148,68000,65940}, //btc
+            {157.885,156.960,158.090,157.380,159.030}, //usdjpy
+            {}, //spx
+            {23363,24380,24811}, //ndq
+            {4561,4731,4291,4185,4651}, //emas
+            {105,102,99.5,110,120}, //minyak
+
         };
 
-        // ===== Run simulation using sari's portfolio as the market =====
-        // (since it contains both instruments being simulated)
+        //List investor yang akan dipengaruhi perubahan pasar
         ArrayList<Investor> semuaInvestor = new ArrayList<>();
-        semuaInvestor.add(budi);
-        semuaInvestor.add(sari);
+        semuaInvestor.add(trump);
+        semuaInvestor.add(netanyahu);
         semuaInvestor.add(johan);
 
         System.out.println("\n========== SIMULASI PASAR ==========");
-        sari.getPorto().simulasiBeberapa(instrumen,hargaSelanjutnya, 5, 0.05, semuaInvestor);
+        //fungsi simulasi beberapa bisa dipake siapa aja, pada kali ini berdasarkan netanyahu, mengganti tidak akan mempengaruhi sama sekali
+        netanyahu.getPorto().simulasiBeberapa(instrumen,hargaSelanjutnya, 5, 0.07, semuaInvestor);
 
-        // ===== Sari manually sells half her TLKM =====
+
         System.out.println("\n========== TRANSAKSI MANUAL SETELAH SIMULASI ==========");
-        sari.jual("TRX004", tlkm, 10, "LONG");
+        netanyahu.jual("TRX004", tlkm, 10, "LONG");
 
-        // ===== Final info =====
+        //Info setelah simulasi pasar
         System.out.println("\n========== FINAL INFO ==========");
-        budi.displayInfo();
-        sari.displayInfo();
+        trump.displayInfo();
+        netanyahu.displayInfo();
         johan.displayInfo();
 
-        // ===== BrokerAdmin =====
+        //Ga tahu mau diapain admin nya
         BrokerAdmin admin = new BrokerAdmin("ADM001", "Admin JRC");
         admin.displayInfo();
     }

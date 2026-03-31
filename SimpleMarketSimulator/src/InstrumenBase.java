@@ -11,36 +11,15 @@ public abstract class InstrumenBase implements Instrumen{
     protected String nama;
     protected double CPrice;
     protected ArrayList<Double> PriceHistory;
-    protected Long totalSupply;
-    protected double liquidity;
     //Method
-    public InstrumenBase(String ticker, String nama, double CPrice, long totalSupply){
+    public InstrumenBase(String ticker, String nama, double CPrice){
         this.ticker = ticker;
         this.nama = nama;
         this.CPrice = CPrice;
         this.PriceHistory = new ArrayList<>();
         this.PriceHistory.add(CPrice);
-        this.totalSupply = totalSupply;
-        this.liquidity = totalSupply;
     }
 
-    public void kurangiLiquidity(double unit){
-        if(unit > liquidity){
-            throw new IllegalArgumentException("Liquidity tidak mencukupi");
-        }
-        this.liquidity -= unit;
-    }
-
-    public void tambahLiquidity(double unit){
-        this.liquidity = Math.min(liquidity + unit, totalSupply);
-    }
-
-    public double getLiquidity(){
-        return liquidity; 
-    }
-    public double getTotalSupply(){
-        return totalSupply;
-    }
     @Override
     public String getKodeInstrumen(){
         return ticker;

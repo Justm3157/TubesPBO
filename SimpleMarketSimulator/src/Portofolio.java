@@ -48,7 +48,7 @@ class Portofolio{
     }
 
     public void viewPortofolio(){
-        String[] urutan = {"Saham", "Crypto", "Index", "Forex"};
+        String[] urutan = {"Saham", "Crypto", "Index", "Forex","Komoditas"};
         double totalPnL = 0;
         for (String kategori : urutan){
             boolean headerudah = false;
@@ -111,15 +111,25 @@ class Portofolio{
 
         for(int hari = 0;hari < langkah;hari++){
             System.out.println("--- Hari ke-" + (hari + 1) + " ---");
+            System.out.println("--- Perubahan Harga Instrumen ---");
+            System.out.printf("%-10s %-20s %-15s %-15s %-10s%n",
+            "Kode", "Nama", "Harga Lama", "Harga Baru", "Perubahan (%)");
             for(int i = 0;i < instrumen.length; i++){
                 double hargaBaru;
+                double hargaLama = instrumen[i].getHargaSekarang();
+
                 if(hari < hargaSelanjutnya[i].length){
                     hargaBaru = hargaSelanjutnya[i][hari];
                 }
                 else{
                     double persen = (random.nextDouble() * 2 - 1)* maxFluktuasi;
-                    hargaBaru = instrumen[i].getHargaSekarang()*(1 + persen);
+                    hargaBaru = hargaLama*(1 + persen);
                 }
+                double perubahan = ((hargaBaru - hargaLama)/hargaLama)*100;
+                String arah = perubahan >= 0? "^":"v";
+                System.out.printf("%-10s %-20s %-15.2f %-15.2f %s %.2f%%%n",
+                instrumen[i].getKodeInstrumen(),instrumen[i].getNamaInstrumen(),hargaLama,
+                hargaBaru,arah,Math.abs(perubahan));
                 instrumen[i].nextHarga(hargaBaru);
             }
             for(Investor investor : investors){

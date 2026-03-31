@@ -8,11 +8,36 @@ public class Saham extends InstrumenBase{
     //Atribut
     private double eps;
     private double bvps;
+    private double totalSupply;
+    private double liquidity;
     //Method
-    public Saham(String ticker, String nama, double CPrice,long lembar,double eps,double bvps){
-        super(ticker,nama,CPrice,lembar);
+    public Saham(String ticker, String nama, double CPrice,double eps,double bvps,double Supply){
+        super(ticker,nama,CPrice);
         this.eps = eps;
         this.bvps = bvps;
+        this.totalSupply = Supply;
+        this.liquidity = Supply;
+    }
+    public void kurangiLiquidity(double unit){
+        if(unit > liquidity){
+            throw new IllegalArgumentException("Liquidity tidak mencukupi");
+        }
+        this.liquidity -= unit;
+    }
+        public void tambahLiquidity(double unit){
+        this.liquidity = Math.min(liquidity + unit, totalSupply);
+    }
+    
+    @Override
+    public double getUkuranKontrak(){
+        return 1;
+    }
+
+    public double getLiquidity(){
+        return liquidity; 
+    }
+    public double getTotalSupply(){
+        return totalSupply;
     }
     @Override
     public double getValuasi(){
@@ -25,7 +50,7 @@ public class Saham extends InstrumenBase{
         return nama;
     }
     public double getLembar(){
-        return this.getLiquidity();
+        return totalSupply;
     }
     public double getEPS(){
         return eps;
@@ -42,8 +67,8 @@ public class Saham extends InstrumenBase{
     public void printValuasi(){
         System.out.println("Saham     : " + nama);
         System.out.println("Harga     : " + CPrice);
-        System.out.println("Lembar    : " + this.getLiquidity());
-        System.out.println("Market Cap: " + this.getValuasi());
+        System.out.println("Lembar    : " + totalSupply);
+        System.out.println("Market Cap: " + getValuasi());
     }
 }
 

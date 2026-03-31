@@ -59,15 +59,17 @@ class Investor extends User {
         freeMargin = equity - usedMargin;
     }
     public void beli(String idTransaksi, Instrumen instrumen, double unit,double leverage,String posisi){
-        InstrumenBase base = (InstrumenBase) instrumen;
-        if(unit > base.getLiquidity()){
-            System.out.println("Order DITOLAK: Liquidity tidak mencukupi.");
-            System.out.printf("Liquidity tersedia : %.2f | Dibutuhkan : %.2f%n", base.getLiquidity(), unit);
-            return;
+
+        if(instrumen instanceof Saham){
+            if(unit > ( ((Saham)instrumen).getLiquidity())){
+                System.out.println("Order DITOLAK: Liquidity tidak mencukupi.");
+                System.out.printf("Liquidity tersedia : %.2f | Dibutuhkan : %.2f%n", ((Saham)instrumen).getLiquidity(), unit);
+                return;
+            }
         }
 
         double harga = instrumen.getHargaSekarang();
-        double nilaiPosisi = harga*unit;
+        double nilaiPosisi = harga*unit*instrumen.getUkuranKontrak();
         double margin = nilaiPosisi/leverage;
 
         
@@ -77,7 +79,9 @@ class Investor extends User {
             System.out.println("Order DITOLAK: Free margin tidak mencukupi.");
             return;
         }
-        base.kurangiLiquidity(unit);
+        if(instrumen instanceof Saham){
+            ((Saham) instrumen).kurangiLiquidity(unit);
+        }
         usedMargin += margin;
         Transaksi transaksi = new Transaksi(idTransaksi, "Buy", nilaiPosisi);
         double fee = transaksi.getFee();
@@ -112,13 +116,14 @@ class Investor extends User {
         else{
             pnl = (hargaBeli - CPrice)*unit;
         }
-        double marginLepas = (hargaBeli*unit)/leverage;
+        double marginLepas = (hargaBeli*unit*instrumen.getUkuranKontrak())/leverage;
         Transaksi transaksi = new Transaksi(idTransaksi,"Sell",totalHarga);
         balance += (pnl - transaksi.getFee());
         usedMargin -= marginLepas;
 
-        InstrumenBase base = (InstrumenBase) instrumen;
-        base.tambahLiquidity(unit);
+        if(instrumen instanceof Saham){
+            ((Saham) instrumen).tambahLiquidity(unit);
+        }
         totalKomisi += transaksi.getFee();
         porto.kurangiHolding(instrumen.getKodeInstrumen(), posisi, unit);
         transaksi.cetakResi(pnl,marginLepas,true,unit);
@@ -137,5 +142,37 @@ class Investor extends User {
         System.out.printf ("Free Margin    : %.2f%n", freeMargin);
         System.out.printf ("Total Komisi   : %.2f%n", totalKomisi);
         System.out.println("===================================");
-    }    
+    } 
+    
+    private void forceCloseAllPositions() {
+    ArrayList<Kepemilikan> copy = new ArrayList<>(porto.getDaftarAset());
+    for (Kepemilikan k : copy) {
+        System.out.println("Force closing: "
+            + k.getInstrumen().getKodeInstrumen()
+            + " | Posisi: " + k.getPosisi()
+            + " | Unit: " + k.getUnit());
+        jual("MC-" + k.getInstrumen().getKodeInstrumen(),
+            k.getInstrumen(),
+            k.getUnit(),
+            k.getPosisi());
+    }
+    System.out.println("Semua posisi ditutup paksa. Balance tersisa: "
+        + String.format("%.2f", balance));
+}
+    
+    public void cekMarginCall(){
+        if (usedMargin <= 0) return;
+        double marginLevel = (equity/usedMargin)*100;
+
+        if (marginLevel < 10) {
+            System.out.println("MARGIN CALL: " + this.getNama()
+                + " | Margin Level: " + String.format("%.2f", marginLevel) + "%");
+            System.out.println("Force closing all positions...");
+            forceCloseAllPositions();
+        } 
+        else if (marginLevel < 50) {
+            System.out.println("WARNING: " + this.getNama()
+                + " | Margin Level rendah: " + String.format("%.2f", marginLevel) + "%");
+        }
+    }
 }
