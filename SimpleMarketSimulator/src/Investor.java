@@ -14,6 +14,7 @@ class Investor extends User {
     private double totalKomisi;
     private Portofolio porto;
     private ArrayList<Transaksi> riwayat;
+    private double usedMargin;
     //Method
     public Investor(){
         super();
@@ -23,6 +24,7 @@ class Investor extends User {
         this.freeMargin = 0;
         this.totalKomisi = 0;
         this.riwayat = new ArrayList<>();
+        this.usedMargin = 0;
     }
     public Investor(String id,String nama,double balance){
         super(id, nama);
@@ -32,6 +34,7 @@ class Investor extends User {
         this.totalKomisi = 0;
         this.porto = new Portofolio();
         this.riwayat = new ArrayList<>();
+        this.usedMargin = 0;
     }
 
     public Portofolio getPorto(){
@@ -53,7 +56,7 @@ class Investor extends User {
     public void updateEquity(){
         double PnLnonFinal = porto.getTotalPnL();
         equity = balance + PnLnonFinal;
-        freeMargin = equity;
+        freeMargin = equity - usedMargin;
     }
     public void beli(String idTransaksi, Instrumen instrumen, double unit,double leverage,String posisi){
         InstrumenBase base = (InstrumenBase) instrumen;
@@ -63,44 +66,66 @@ class Investor extends User {
             return;
         }
 
-        double totalHarga = instrumen.getHargaSekarang()*unit;
-        Transaksi transaksi = new Transaksi(idTransaksi, "Buy", totalHarga);
-        double totalBayar = transaksi.getTotalHargaSetelahFee();
+        double harga = instrumen.getHargaSekarang();
+        double nilaiPosisi = harga*unit;
+        double margin = nilaiPosisi/leverage;
 
-        if(!cekBuyingPower(totalBayar, leverage)) return;
+        
+        
 
+        if(freeMargin <= margin){
+            System.out.println("Order DITOLAK: Free margin tidak mencukupi.");
+            return;
+        }
         base.kurangiLiquidity(unit);
-        balance -= totalBayar;
-        totalKomisi += transaksi.getFee();
-        freeMargin = balance;
+        usedMargin += margin;
+        Transaksi transaksi = new Transaksi(idTransaksi, "Buy", nilaiPosisi);
+        double fee = transaksi.getFee();
+        balance -= fee;
 
-        porto.tambahInstrumen(instrumen, unit,leverage,posisi);
-        transaksi.cetakResi();
+        totalKomisi += fee;
+        porto.tambahInstrumen(instrumen, unit, leverage,posisi);
+        transaksi.cetakResi(0,margin,false,unit);
         riwayat.add(transaksi);
+        updateEquity();
     }
-
+    
     public void jual(String idTransaksi, Instrumen instrumen,double unit,String posisi){
-        double holding = porto.getHolding(instrumen.getNamaInstrumen(), posisi);
+        double holding = porto.getHolding(instrumen.getKodeInstrumen(), posisi);
         if (unit > holding){
             System.out.println("Order DITOLAK: Holding tidak mencukupi.");
             System.out.printf("Holding tersedia : %.2f | Ingin dijual : %.2f%n",holding, unit);
             return;
         }
-        double totalHarga = instrumen.getHargaSekarang()*unit;
-        Transaksi transaksi = new Transaksi(idTransaksi,"Sell",totalHarga);
+        Kepemilikan k = porto.findKepemilikan(instrumen.getKodeInstrumen(), posisi);
+        double hargaBeli = k.gethargaBeli();
+        double leverage = k.getLeverage();
+        double CPrice = instrumen.getHargaSekarang();
 
-        double Setelahkomisi = transaksi.getTotalHargaSetelahFee();
+        double totalHarga = CPrice*unit;
+
+
+        double pnl;
+        if(posisi.equals("LONG")){
+            pnl = (CPrice - hargaBeli) * unit;
+        }
+        else{
+            pnl = (hargaBeli - CPrice)*unit;
+        }
+        double marginLepas = (hargaBeli*unit)/leverage;
+        Transaksi transaksi = new Transaksi(idTransaksi,"Sell",totalHarga);
+        balance += (pnl - transaksi.getFee());
+        usedMargin -= marginLepas;
 
         InstrumenBase base = (InstrumenBase) instrumen;
         base.tambahLiquidity(unit);
-        balance += Setelahkomisi;
         totalKomisi += transaksi.getFee();
-        freeMargin = balance;
-
-        porto.kurangiHolding(instrumen.getNamaInstrumen(), posisi, unit);
-        transaksi.cetakResi();
+        porto.kurangiHolding(instrumen.getKodeInstrumen(), posisi, unit);
+        transaksi.cetakResi(pnl,marginLepas,true,unit);
         riwayat.add(transaksi);
+        updateEquity();
     }
+
     @Override
     public void displayInfo(){
         updateEquity(); // always recalculate before displaying

@@ -42,9 +42,14 @@ public abstract class InstrumenBase implements Instrumen{
         return totalSupply;
     }
     @Override
-    public String getNamaInstrumen(){
+    public String getKodeInstrumen(){
         return ticker;
     }
+    @Override
+    public String getNamaInstrumen(){
+        return nama;
+    }
+
     @Override
     public double getHargaSekarang(){
         return CPrice;
@@ -58,4 +63,10 @@ public abstract class InstrumenBase implements Instrumen{
         this.CPrice =  hargaBaru;
         this.PriceHistory.add(hargaBaru);
     }
+    @Override
+    public double getValuasi(){
+        return CPrice;
+    }
+    @Override
+    public abstract double getUkuranKontrak();
 } 

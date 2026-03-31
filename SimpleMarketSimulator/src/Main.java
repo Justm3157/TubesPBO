@@ -54,7 +54,7 @@ public class Main {
             {3900, 3850, 3950, 4000, 4100}     // TLKM
         };
 
-        // ===== Run simulation using Budi's portfolio as the market =====
+        // ===== Run simulation using sari's portfolio as the market =====
         // (since it contains both instruments being simulated)
         ArrayList<Investor> semuaInvestor = new ArrayList<>();
         semuaInvestor.add(budi);
@@ -62,7 +62,7 @@ public class Main {
         semuaInvestor.add(johan);
 
         System.out.println("\n========== SIMULASI PASAR ==========");
-        budi.getPorto().simulasiBeberapa(instrumen,hargaSelanjutnya, 5, 0.05, semuaInvestor);
+        sari.getPorto().simulasiBeberapa(instrumen,hargaSelanjutnya, 5, 0.05, semuaInvestor);
 
         // ===== Sari manually sells half her TLKM =====
         System.out.println("\n========== TRANSAKSI MANUAL SETELAH SIMULASI ==========");

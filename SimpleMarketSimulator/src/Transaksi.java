@@ -29,15 +29,26 @@ class Transaksi{
         this.SL = sl;
         this.TP = tp;
     }
-    public void cetakResi() {
+    public void cetakResi(double pnl, double margin, boolean isSell,double unit) {
         System.out.println("====== RESI TRANSAKSI ======");
         System.out.println("ID Transaksi : " + idTransaksi);
         System.out.println("Jenis Order  : " + jenisOrder);
         System.out.printf ("Total Harga  : %.2f%n", totalHarga);
         System.out.printf ("Fee (0.15%%) : %.2f%n", fee);
-        System.out.printf ("Total + Fee  : %.2f%n", hargasetelahFee);
+        if(isSell){
+        System.out.printf ("Realized PnL : %.2f%n", pnl);
+        System.out.printf ("Margin Release : %.2f%n", margin);
+        System.out.printf ("Net Balance Change : %.2f%n", (pnl - fee));
+        System.out.printf ("Unit : %.2f%n", unit);
+        } 
+        else {
+            System.out.printf ("Margin Used  : %.2f%n", margin);
+            System.out.printf ("Balance Change : -%.2f%n", fee);
+        }
+
         if (SL != 0) System.out.printf("Stop Loss    : %.2f%n", SL);
         if (TP != 0) System.out.printf("Take Profit  : %.2f%n", TP);
+
         System.out.println("============================");
     }
     public String getIdTransaksi(){

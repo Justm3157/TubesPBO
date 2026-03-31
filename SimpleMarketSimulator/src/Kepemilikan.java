@@ -63,10 +63,10 @@ class Kepemilikan{
     public double getPnL(){
         double hargaKini = nama.getHargaSekarang();
         if(posisi.equals("LONG")){
-            return (hargaKini - hargaBeli)*unit*leverage;
+            return (hargaKini - hargaBeli)*unit;
         }
         else{
-            return (hargaBeli - hargaKini)*unit*leverage;
+            return (hargaBeli - hargaKini)*unit;
         }
     }
     public String getPosisi(){

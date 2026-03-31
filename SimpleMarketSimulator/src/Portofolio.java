@@ -33,16 +33,16 @@ class Portofolio{
 
             if(tp != 0 && CPrice >= tp){
                 System.out.println("Take Profit Executed: " +
-                    k.getInstrumen().getNamaInstrumen() + " @ " + CPrice
+                    k.getInstrumen().getKodeInstrumen() + " @ " + CPrice
                     + " | P&L: " + String.format("%.2f",pnl));
-                investor.jual("TP-" + k.getInstrumen().getNamaInstrumen(),k.getInstrumen(), k.getUnit(), k.getPosisi());
+                investor.jual("TP-" + k.getInstrumen().getKodeInstrumen(),k.getInstrumen(), k.getUnit(), k.getPosisi());
             }
             if(sl != 0 && CPrice <= sl){
                 System.out.println("STOP LOSS triggered: "
-                    + k.getInstrumen().getNamaInstrumen()
+                    + k.getInstrumen().getKodeInstrumen()
                     + " @ " + CPrice
                     + " | P&L: " + String.format("%.2f", pnl));
-                investor.jual("SL-" + k.getInstrumen().getNamaInstrumen(),k.getInstrumen(), k.getUnit(), k.getPosisi());
+                investor.jual("SL-" + k.getInstrumen().getKodeInstrumen(),k.getInstrumen(), k.getUnit(), k.getPosisi());
             }
         }
     }
@@ -57,9 +57,9 @@ class Portofolio{
                     continue;
                 }
                 if(!headerudah){
-                    System.out.println("========== " + kategori + " ==========");
-                    System.out.printf("%-10s %-8s %-15s %-15s %-15s %-15s%n",
-                "Ticker", "Posisi", "Harga Beli", "Harga Kini", "Gain (%)", "P&L");
+                    System.out.println("============================== " + kategori + " ============================== ");
+                    System.out.printf("%-10s %-8s %-15s %-15s %-15s %-15s %-15s %-15s%n",
+                "Ticker", "Posisi", "Harga Beli", "Harga Kini", "Gain (%)", "P&L","Unit","Leverage");
                     headerudah = true;
                 }
 
@@ -70,19 +70,30 @@ class Portofolio{
                 double kapital = (hargaBeli * unit)/k.getLeverage();
                 double gain = (pnl/kapital)*100;
                 totalPnL += pnl;
-                System.out.printf("%-10s %-8s %-15.2f %-15.2f %-15.2f %-15.2f%n",
-                    k.getInstrumen().getNamaInstrumen(),
+                double leverage = k.getLeverage();
+                System.out.printf("%-10s %-8s %-15.2f %-15.2f %-15.2f %-15.2f %-15.2f %-15.2f%n",
+                    k.getInstrumen().getKodeInstrumen(),
                     k.getPosisi(),
-                    hargaBeli, hargasekarang, gain, pnl);
+                    hargaBeli, hargasekarang, gain, pnl,unit,leverage);
             }
         }
         System.out.println("==============================");
         System.out.printf("Total P&L: %.2f%n", totalPnL);
     }
 
+    public Kepemilikan findKepemilikan(String ticker, String posisi){
+        for(Kepemilikan k : daftaraset){
+            if(k.getInstrumen().getKodeInstrumen().equals(ticker) &&
+                k.getPosisi().equals(posisi)){
+                return k;
+            }
+        }
+        return null;
+    }
+
     public void tambahInstrumen(Instrumen instrumen, double unit,double leverage,String posisi){
         for(Kepemilikan k : daftaraset){
-            if(k.getInstrumen().getNamaInstrumen().equals(instrumen.getNamaInstrumen()) && k.getPosisi().equals(posisi)){
+            if(k.getInstrumen().getKodeInstrumen().equals(instrumen.getKodeInstrumen()) && k.getPosisi().equals(posisi)){
                 k.tambahUnit(unit);
                 return;
             }
@@ -124,7 +135,7 @@ class Portofolio{
 
     public double getHolding(String ticker,String posisi){
         for(Kepemilikan k:daftaraset){
-            if(k.getInstrumen().getNamaInstrumen().equals(ticker) && k.getPosisi().equals(posisi)){
+            if(k.getInstrumen().getKodeInstrumen().equals(ticker) && k.getPosisi().equals(posisi)){
                 return k.getUnit();
             }
         }
@@ -133,7 +144,7 @@ class Portofolio{
 
     public void kurangiHolding(String ticker,String posisi, double unit){
         for(Kepemilikan k:daftaraset){
-            if(k.getInstrumen().getNamaInstrumen().equals(ticker) && k.getPosisi().equals(posisi)){
+            if(k.getInstrumen().getKodeInstrumen().equals(ticker) && k.getPosisi().equals(posisi)){
                 if(k.getUnit() - unit <= 0){
                     daftaraset.remove(k);
                     return;
