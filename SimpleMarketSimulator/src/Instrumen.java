@@ -10,8 +10,8 @@ public interface Instrumen {
     abstract public double getValuasi();
     abstract public String getKodeInstrumen();
     abstract public String getNamaInstrumen();
-    public abstract double getHargaSekarang();   // add this
-    public abstract ArrayList<Double> getHistoriHarga();  // add this
+    public abstract double getHargaSekarang();   
+    public abstract ArrayList<Double> getHistoriHarga();  
     public abstract void nextHarga(double hargaBaru);
     public abstract double getUkuranKontrak();
 } 

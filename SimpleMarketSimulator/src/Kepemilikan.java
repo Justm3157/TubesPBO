@@ -61,6 +61,7 @@ class Kepemilikan{
         return TP;
     }
     public double getPnL(){
+        assert unit > 0: "Unit tidak boleh nol atau negatif" + unit;
         double hargaKini = nama.getHargaSekarang();
         double UkuranKontrak = nama.getUkuranKontrak();
         if(posisi.equals("LONG")){

@@ -28,6 +28,9 @@ class Investor extends User {
     }
     public Investor(String id,String nama,double balance){
         super(id, nama);
+        if(balance < 0){
+            throw new IllegalArgumentException("Balance tidak boleh negatif");
+        }
         this.balance = balance;
         this.freeMargin = balance;
         this.equity = balance;
@@ -57,6 +60,9 @@ class Investor extends User {
         double PnLnonFinal = porto.getTotalPnL();
         equity = balance + PnLnonFinal;
         freeMargin = equity - usedMargin;
+        assert freeMargin <= equity:
+            "FreeMargin tidak boleh melebihi equity. Freemargin: " + freeMargin + "equity: " + equity;
+        cekMarginCall();
     }
     public void beli(String idTransaksi, Instrumen instrumen, double unit,double leverage,String posisi){
 
@@ -133,7 +139,7 @@ class Investor extends User {
 
     @Override
     public void displayInfo(){
-        updateEquity(); // always recalculate before displaying
+        updateEquity(); 
         System.out.println("========== Info Investor ==========");
         System.out.println("ID Investor    : " + this.getID());
         System.out.println("Nama Investor  : " + this.getNama());

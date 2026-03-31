@@ -161,6 +161,9 @@ class Portofolio{
                 }
                 else{
                     k.kurangiUnit(unit);
+                    assert k.getUnit() >= 0:
+                        "Unit kepemilikan negatif setelah pengurangan: " + k.getUnit();
+                    return;
                 }
             }
         }

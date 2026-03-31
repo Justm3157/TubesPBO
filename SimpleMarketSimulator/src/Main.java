@@ -21,6 +21,11 @@ public class Main {
         Komoditas minyak = new Komoditas("BZ", "Brent Crude Oil", 112);
 
         //Deklarasi investor disini
+        try{
+            Investor Jokowi  = new Investor("INV001", "jkw",  -500000);
+        } catch (IllegalArgumentException e){
+            System.out.println("Gagal membuat investor" + e.getMessage());
+        }
         Investor trump  = new Investor("INV001", "trump",  500000);
         Investor netanyahu  = new Investor("INV002", "netanyahu",  500000);
         Investor johan = new Investor("INV003", "Johan", 500000);
